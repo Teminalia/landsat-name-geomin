@@ -194,10 +194,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById('exportCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Match canvas dimensions to the actual rendered viewport size
         const viewportRect = renderViewport.getBoundingClientRect();
-        canvas.width = viewportRect.width;
-        canvas.height = viewportRect.height;
+        
+        // Force pristine 1080p output mirroring the fullscreen emulation math
+        const EXPORT_WIDTH = 1920;
+        const EXPORT_HEIGHT = 1080;
+        
+        const scaleX = EXPORT_WIDTH / viewportRect.width;
+        const scaleY = EXPORT_HEIGHT / viewportRect.height;
+        
+        canvas.width = EXPORT_WIDTH;
+        canvas.height = EXPORT_HEIGHT;
         
         // Draw the background image first
         try {
@@ -213,13 +220,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (node.tagName.toLowerCase() === 'img') {
                 const rect = node.getBoundingClientRect();
                 
-                // Calculate relative position within the viewport
-                const x = rect.left - viewportRect.left;
-                const y = rect.top - viewportRect.top;
+                // Scale physical bounds seamlessly to 1080p
+                const x = (rect.left - viewportRect.left) * scaleX;
+                const y = (rect.top - viewportRect.top) * scaleY;
+                const w = rect.width * scaleX;
+                const h = rect.height * scaleY;
                 
-                // Draw image on canvas
+                // Draw image on canvas with dynamically scaled shadow
                 try {
-                   ctx.drawImage(node, x, y, rect.width, rect.height);
+                   ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                   ctx.shadowBlur = 12 * scaleY;
+                   ctx.shadowOffsetY = 6 * scaleY;
+                   ctx.shadowOffsetX = 0;
+                   
+                   ctx.drawImage(node, x, y, w, h);
+                   
+                   ctx.shadowColor = 'transparent';
+                   ctx.shadowBlur = 0;
+                   ctx.shadowOffsetY = 0;
                 } catch(e) {
                     console.error("Could not draw letter.", e);
                 }
@@ -230,12 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nameSubtitle && nameSubtitle.innerText.trim() !== '') {
             const subRect = nameSubtitle.getBoundingClientRect();
             const subStyle = window.getComputedStyle(nameSubtitle);
-            const subX = subRect.left - viewportRect.left;
-            const subY = subRect.top - viewportRect.top;
+            const subX = (subRect.left - viewportRect.left) * scaleX;
+            const subY = (subRect.top - viewportRect.top) * scaleY;
             
-            ctx.font = `${subStyle.fontWeight} ${subStyle.fontSize} ${subStyle.fontFamily}`;
-            // Optional: account for custom CSS letter-spacing which Canvas API doesn't fully support directly
-            // For now, standard fillText suffices
+            const fontSizeRaw = parseFloat(subStyle.fontSize) * scaleY;
+            
+            ctx.font = `${subStyle.fontWeight} ${fontSizeRaw}px ${subStyle.fontFamily}`;
             ctx.textBaseline = 'top';
             ctx.textAlign = 'left';
             ctx.fillStyle = subStyle.color;
@@ -247,18 +265,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (wm) {
             const wmRect = wm.getBoundingClientRect();
             const wmStyle = window.getComputedStyle(wm);
-            const wmX = wmRect.left - viewportRect.left;
-            const wmY = wmRect.top - viewportRect.top;
+            const wmX = (wmRect.left - viewportRect.left) * scaleX;
+            const wmY = (wmRect.top - viewportRect.top) * scaleY;
             
-            ctx.font = `${wmStyle.fontWeight} ${wmStyle.fontSize} ${wmStyle.fontFamily}`;
+            const fontSizeRaw = parseFloat(wmStyle.fontSize) * scaleY;
+            
+            ctx.font = `${wmStyle.fontWeight} ${fontSizeRaw}px ${wmStyle.fontFamily}`;
             ctx.textBaseline = 'top';
             ctx.textAlign = 'left';
+            
+            // Replicate CSS text-shadow mathematically so white text pops on white bg
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 12 * scaleY;
+            ctx.shadowOffsetY = 4 * scaleY;
+            ctx.shadowOffsetX = 0;
             
             ctx.fillStyle = '#ffffff';
             ctx.fillText("Landsat ", wmX, wmY);
             let offset = ctx.measureText("Landsat ").width;
-            ctx.fillStyle = '#00d2ff'; // Using hardcoded accent color for canvas
+            ctx.fillStyle = '#00d2ff';
             ctx.fillText("Alphabet", wmX + offset, wmY);
+            
+            // Reset shadows to avoid contaminating hashtable draws later
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
         }
 
         // Draw Hashtag Pills manually onto canvas
@@ -266,20 +297,23 @@ document.addEventListener('DOMContentLoaded', () => {
         hashtagPills.forEach(pill => {
             const rect = pill.getBoundingClientRect();
             const style = window.getComputedStyle(pill);
-            const x = rect.left - viewportRect.left;
-            const y = rect.top - viewportRect.top;
+            const x = (rect.left - viewportRect.left) * scaleX;
+            const y = (rect.top - viewportRect.top) * scaleY;
+            const w = rect.width * scaleX;
+            const h = rect.height * scaleY;
             
             // Box
             ctx.fillStyle = style.backgroundColor;
-            ctx.fillRect(x, y, rect.width, rect.height);
+            ctx.fillRect(x, y, w, h);
             
             // Text
-            ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+            const fontSizeRaw = parseFloat(style.fontSize) * scaleY;
+            ctx.font = `${style.fontWeight} ${fontSizeRaw}px ${style.fontFamily}`;
             ctx.fillStyle = style.color;
             ctx.textBaseline = 'middle';
             ctx.textAlign = 'center';
             // Adjusted manually to land visual center for standard fonts
-            ctx.fillText(pill.innerText, x + rect.width/2, y + rect.height/2 + 1);
+            ctx.fillText(pill.innerText, x + w/2, y + h/2 + 1);
         });
 
         // Generate final file

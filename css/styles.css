@@ -271,6 +271,7 @@ input::placeholder {
     overflow: hidden;
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
     border: 1px solid var(--glass-border);
+    container-type: inline-size;
 }
 
 .render-viewport {
@@ -312,7 +313,7 @@ input::placeholder {
     position: absolute;
     bottom: 24%; /* Pushed up to maintain stack order */
     left: 7.2%; /* Precise optical match with green background block */
-    font-size: 0.96rem;
+    font-size: 0.9cqi; /* Perfect geometric scaling matching fullscreen exactly */
     font-weight: normal;
     color: #000000;
     text-shadow: none;
@@ -332,8 +333,8 @@ input::placeholder {
     cursor: default;
 }
 
-.app-container:fullscreen .letter-grid.few-letters .letter-img {
-    max-height: 80%; /* Strictly shrinks height for <= 5 letter inputs during Fullscreen */
+.letter-grid.few-letters .letter-img {
+    max-height: 80%; /* Strictly shrinks height for <= 5 letter inputs seamlessly everywhere */
     max-width: 16%; /* 80% shrunk from 20% max-width cap */
 }
 
@@ -440,7 +441,7 @@ input::placeholder {
     top: 8%;
     right: 5%;
     color: #ffffff;
-    font-size: 2rem;
+    font-size: 2.2cqi; /* Anchored scaling */
     font-weight: 800;
     letter-spacing: -1px;
     z-index: 10;
@@ -464,8 +465,8 @@ input::placeholder {
 
 .hashtag-pill {
     color: #ffffff;
-    padding: 0.4rem 0.8rem;
-    font-size: 1rem;
+    padding: 0.4cqi 0.8cqi;
+    font-size: 0.9cqi;
     font-weight: 800;
     text-transform: uppercase;
     border-radius: 4px;
