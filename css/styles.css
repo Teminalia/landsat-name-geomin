@@ -1,0 +1,472 @@
+:root {
+    --bg-color: #0b0f19;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --accent-color: #00d2ff;
+    --accent-gradient: linear-gradient(135deg, #3a7bd5, #00d2ff);
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(0, 0, 0, 0.3);
+    --input-placeholder: rgba(255, 255, 255, 0.2);
+    --btn-secondary-bg: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="light"] {
+    --bg-color: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent-color: #0284c7;
+    --accent-gradient: linear-gradient(135deg, #2563eb, #0ea5e9);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.5);
+    --input-placeholder: rgba(0, 0, 0, 0.4);
+    --btn-secondary-bg: rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: radial-gradient(circle at 15% 50%, rgba(58, 123, 213, 0.15), transparent 25%),
+                      radial-gradient(circle at 85% 30%, rgba(0, 210, 255, 0.1), transparent 25%);
+    background-attachment: fixed;
+}
+
+/* Fullscreen Button Styles */
+.fullscreen-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.icon-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.app-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+}
+
+.app-container:fullscreen {
+    max-width: 100%;
+    height: 100vh;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color); /* Maintain background color to block screen */
+}
+
+/* Hide UI during Fullscreen */
+.app-container:fullscreen .app-header,
+.app-container:fullscreen .step-header,
+.app-container:fullscreen .input-group,
+.app-container:fullscreen .actions-section {
+    display: none !important;
+}
+
+/* Maintain geometric boundaries in Fullscreen */
+.app-container:fullscreen .render-section {
+    width: 100vw;
+    height: auto;
+    max-height: 100vh;
+    max-width: calc(100vh * (16 / 9)); 
+    aspect-ratio: 16 / 9; /* Strict locking to prevent warped layout rendering */
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    margin: auto !important;
+}
+
+.app-container:fullscreen .glass-panel {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.app-header {
+    text-align: center;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.app-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.app-header h1 span {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.app-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.step-container h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.step-header {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
+
+/* Background Selection UI */
+.bg-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.bg-option {
+    border: 3px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.bg-option img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+}
+
+.bg-option:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.bg-option.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+    opacity: 1;
+}
+
+.step-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Input Styles */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+input[type="text"], input[type="url"] {
+    width: 100%;
+    background: var(--input-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+}
+
+input[type="url"] {
+    font-size: 1rem;
+    letter-spacing: normal;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+}
+
+input::placeholder {
+    color: var(--input-placeholder);
+}
+
+/* Render Area */
+.render-section {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9; /* Standard landscape ratio */
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    border: 1px solid var(--glass-border);
+}
+
+.render-viewport {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.letter-grid-positioner {
+    position: absolute;
+    top: 20%;
+    bottom: 30%; /* Statically secure above subtitle */
+    left: 6%; /* Pad safely to prevent right/left edge bleeding */
+    right: 6%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.letter-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center; 
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    gap: 1%;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.name-subtitle {
+    position: absolute;
+    bottom: 24%; /* Pushed up to maintain stack order */
+    left: 7.2%; /* Precise optical match with green background block */
+    font-size: 0.96rem;
+    font-weight: normal;
+    color: #000000;
+    text-shadow: none;
+    text-transform: none;
+    letter-spacing: normal;
+    z-index: 12;
+}
+
+.letter-img {
+    flex: 1 1 auto;
+    min-width: 0; 
+    max-height: 100%;
+    max-width: 20%; /* Capped to prevent 2-5 letter clusters from blowing up too large */
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+    cursor: default;
+}
+
+.app-container:fullscreen .letter-grid.few-letters .letter-img {
+    max-height: 80%; /* Strictly shrinks height for <= 5 letter inputs during Fullscreen */
+    max-width: 16%; /* 80% shrunk from 20% max-width cap */
+}
+
+.space-char {
+    flex: 0 0 5%;
+    height: 100%;
+}
+
+.letter-img:hover {
+    transform: scale(1.08) translateY(-5px);
+    filter: drop-shadow(0 10px 20px rgba(0, 210, 255, 0.4));
+}
+
+.actions-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.primary-btn {
+    background: var(--accent-gradient);
+    color: #fff;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+}
+
+.primary-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.secondary-btn {
+    background: var(--btn-secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+}
+
+.secondary-btn:hover {
+    background: var(--glass-border);
+}
+
+.upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 1.5rem;
+}
+
+.upload-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.upload-flex {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.upload-flex input {
+    flex: 1;
+}
+
+#uploadStatus {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-height: 1.2em;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fullscreen Watermark */
+.fullscreen-watermark {
+    position: absolute;
+    top: 8%;
+    right: 5%;
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    z-index: 10;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.fullscreen-watermark span {
+    color: var(--accent-color);
+}
+
+/* Hashtags Layout */
+.hashtags-container {
+    position: absolute;
+    bottom: 18%; /* ~10% visual higher stack */
+    left: 7.2%; /* Precise optical match with green background block */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    z-index: 12;
+}
+
+.hashtag-pill {
+    color: #ffffff;
+    padding: 0.4rem 0.8rem;
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 4px;
+}
