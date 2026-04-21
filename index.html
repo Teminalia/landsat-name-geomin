@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landsat Alphabet PWA</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <!-- Floating Exit Fullscreen Button -->
+        <button id="floatingExitFullscreenBtn" class="icon-btn" title="Exit Fullscreen" style="display: none; position: absolute; top: 20px; right: 20px; z-index: 9999; background: var(--glass-bg);">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--text-primary)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>
+        </button>
+
+        <header class="app-header">
+            <h1>Landsat <span>Alphabet</span></h1>
+            <p>Generate your name using actual satellite imagery.</p>
+        </header>
+
+        <main class="main-content">
+            
+            <!-- STEP 1: Background Selection -->
+            <section id="step1" class="step-container glass-panel active-step">
+                <h2>1. Choose Background</h2>
+                <div class="bg-selection-grid">
+                    <div class="bg-option selected" data-bg="background/background1.png">
+                        <img src="background/background1.png" alt="Background 1">
+                    </div>
+                    <div class="bg-option" data-bg="background/background2.png">
+                        <img src="background/background2.png" alt="Background 2">
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button id="nextToStep2" class="btn primary-btn">Next: Enter Name</button>
+                </div>
+            </section>
+
+            <!-- STEP 2: Name Input & Render -->
+            <section id="step2" class="step-container glass-panel" style="display: none;">
+                <div class="step-header">
+                    <button id="backToStep1" class="btn text-btn">
+                        &larr; Back to Backgrounds
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <label for="nameInput">Enter your name (max 15 characters, spaces allowed)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="nameInput" placeholder="TYPE HERE..." maxlength="15" autocomplete="off" spellcheck="false" style="flex: 1;">
+                        
+                        <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme" style="flex-shrink: 0; width: 54px; height: 54px; border-radius: 10px;">
+                            <svg class="moon-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </button>
+
+                        <button id="fullscreenBtn" class="icon-btn" title="Enter Fullscreen" style="flex-shrink: 0; width: 54px; height: 54px; border-radius: 10px;">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 1rem; display: flex; flex-direction: row; gap: 10px;">
+                    <input type="text" id="hashtag1" placeholder="#OptionalTag1" autocomplete="off" spellcheck="false" style="font-size: 1rem; letter-spacing: normal;">
+                    <input type="text" id="hashtag2" placeholder="#OptionalTag2" autocomplete="off" spellcheck="false" style="font-size: 1rem; letter-spacing: normal;">
+                </div>
+
+                <!-- Render/Display Section -->
+                <div class="render-section" style="margin-top: 1.5rem;">
+                    <div class="render-viewport" id="renderViewport">
+                        <!-- Hidden reference for the canvas generation -->
+                        <img id="bgImg" src="background/background1.png" style="display: none;" crossorigin="anonymous">
+                        
+                        <!-- Watermark always visible -->
+                        <div class="fullscreen-watermark">Landsat <span>Alphabet</span></div>
+                        
+                        <!-- Live Hashtags Display -->
+                        <div id="hashtagsDisplay" class="hashtags-container">
+                            <span class="hashtag-pill" style="background:#00b85c;">#GEOMINCENTER</span>
+                            <span class="hashtag-pill" style="background:#00b85c;">#CFES</span>
+                        </div>
+
+                        <!-- Dynamic Letter Container Wrapper -->
+                        <div class="letter-grid-positioner">
+                            <div id="letterGrid" class="letter-grid"></div>
+                        </div>
+                        
+                        <!-- Absolute Name Subtitle -->
+                        <div id="nameSubtitle" class="name-subtitle"></div>
+                    </div>
+                </div>
+
+                <!-- Export & Upload Section -->
+                <div class="actions-section" style="margin-top: 1.5rem;">
+                    <div class="action-buttons" style="display: flex; gap: 1rem;">
+                        <button id="downloadBtn" class="btn primary-btn" style="flex: 1;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download PNG
+                        </button>
+                        <button id="shareBtn" class="btn secondary-btn" style="flex: 1;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                            Share Image
+                        </button>
+                    </div>
+                    
+                    <div class="upload-group">
+                        <label for="serverUrl">Custom Server Webhook (Vercel Test)</label>
+                        <div class="upload-flex">
+                            <input type="url" id="serverUrl" placeholder="https://your-vercel-app.com/api/upload">
+                            <button id="uploadBtn" class="btn secondary-btn">Upload</button>
+                        </div>
+                        <small id="uploadStatus"></small>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Hidden Canvas for Composite rendering -->
+    <canvas id="exportCanvas" style="display: none;"></canvas>
+
+    <!-- App Logic -->
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(registration => {
+                    console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
